@@ -1,0 +1,279 @@
+---
+title: "STAT 302 Final Presentation: Health Issues in Chinatown"
+format:
+  revealjs:
+    embed-resources: true
+    smaller: true
+    scrollable: true
+    transition: fade
+    transition-speed: slow
+    slide-number: c/t
+editor: source
+---
+
+## Overview of Data
+
+For this project, I used "PLACES: Local Data for Better Health" datasets to investigate health issues in Chicago's Chinatown. This data collection project is an extension of the 500 Cities Project conducted from 2016-2019 by the CDC, CDC Foundation, and Robert Wood Johnson Foundation, which investigated 27 chronic disease measures for the 500 largest American cities.
+
+This extension project began in 2019 with releases occurring annually from 2020. This project utilized all three releases of data organized by ZCTA, focusing on the 60616 zip code. Linked below are the source to each dataset as a citation:
+
+-   [PLACES 2020](https://chronicdata.cdc.gov/500-Cities-Places/PLACES-Local-Data-for-Better-Health-ZCTA-Data-2020/fbbf-hgkc)
+-   [PLACES 2021](https://chronicdata.cdc.gov/500-Cities-Places/PLACES-Local-Data-for-Better-Health-ZCTA-Data-2021/s85h-9xpy)
+-   [PLACES 2022](https://chronicdata.cdc.gov/500-Cities-Places/PLACES-Local-Data-for-Better-Health-ZCTA-Data-2022/qnzd-25i4)
+
+![](data/places_image.jpg){fig-alt="PLACES Local Data for Better Health icon"}
+
+## Why this Data
+
+I am part of a club called Chinatown Health Initiative, and one of the projects my sub-committee hopes to complete this year is a data science initiative to learn more about the health issues that Chinatown residents face most frequently. I therefore selected this dataset to begin this club project. ZCTA data was chosen over county and city data to increase specificity of the region of study.
+
+## Prevalence of Disease
+
+```{r}
+#| echo: false
+#| label: graphic-1
+
+# Load packages for document
+library(tidyverse)
+library(tigris)
+library(patchwork)
+
+# Chinatown health outcomes 2022 dataset
+CT_data_22 <- read_csv("data/PLACES_2022.csv") %>% 
+  janitor::clean_names() %>% 
+  filter(location_name == "60616" & 
+         category == "Health Outcomes") %>% 
+  arrange(data_value) %>% 
+  #create dummy variable to differentiate each disease for filled bars and labels
+   mutate(
+     fill = c("a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m"),
+     label = str_c(data_value, "%", sep = "")
+     )
+
+# Plot code
+ggplot(CT_data_22, aes(x = reorder(short_question_text, -data_value), data_value)) +
+  geom_col(aes(fill = fill), show.legend = F) + 
+  theme_minimal() +
+  scale_y_continuous(
+    name = "Crude Prevalence",
+    labels = scales::label_percent(scale = 1),
+    expand = expansion(add = c(0.5,2))
+    ) +
+  scale_x_discrete(
+    name = "Disease or Health Condition",
+    expand = expansion(add = c(0.5, 2))
+    ) +
+  # Fill bars with custom colors generated from Coolors.co. Full palette can be found in "chinatown palette.pdf" in "data" subfolder
+  scale_fill_manual(
+    values = c("#F4D444", "#EFC440", "#EBB53D", "#E6A539", "#E19535", "#DC8632", "#D8762E", "#D3662A", "#CE5727", "#C94723", "#C5371F", "#C0281C", "#BB1818")
+    ) +
+  ggtitle("Prevalance of Disease in Sampled Chinatown adults aged ≥ 18 (2020)") +
+  labs(caption = "Source: PLACES: Local Data for Better Health 2022 release") +
+  theme(
+    axis.ticks.length.x = unit(0, "cm"),
+    axis.text.x = element_text(size = 8, angle = -30, hjust = 0),
+    axis.title = element_text(family = "serif"),
+    plot.title = element_text(family = "serif", size = 14, hjust = 0.5),
+    plot.title.position = "plot",
+    plot.caption = element_text(family = "serif", size = 10),
+    panel.grid.minor = element_blank(),
+    panel.grid.major.x = element_blank()
+    ) +
+  # Add labels
+  geom_text(
+    aes(label = label),
+    color = "white",
+    hjust = 0.5,
+    vjust = 1.5,
+    size = 3
+    )  
+```
+
+## Change in Risk Behaviors
+
+```{r}
+#| echo: false
+#| label: graphic-2
+
+# Health Risk Behavior data from 2020, 2021, and 2022 releases of PLACES Data
+c20 <- read_csv("data/PLACES_2020.csv") %>% 
+   janitor::clean_names() %>% 
+   filter(location_name == "60616" & 
+          category == "Unhealthy Behaviors" & 
+          measure_id != "OBESITY") %>% 
+  mutate(short_question_text = 
+           factor(
+             short_question_text,
+             levels = c("Sleep <7 hours", "Physical Inactivity", "Binge Drinking", "Current Smoking")
+             )
+         ) %>% 
+  arrange(desc(data_value))
+
+c21 <- read_csv("data/PLACES_2021.csv") %>% 
+  janitor::clean_names() %>% 
+  filter(location_name == "60616" & 
+         category == "Health Risk Behaviors") %>%  
+  mutate(
+    short_question_text = factor(
+      short_question_text,
+      levels = c("Sleep <7 hours", "Physical Inactivity", "Binge Drinking", "Current Smoking")
+      )
+    ) %>%
+  arrange(desc(data_value))
+
+c22 <- read_csv("data/PLACES_2022.csv") %>% 
+  janitor::clean_names() %>% 
+  filter(location_name == "60616" & 
+         category == "Health Risk Behaviors") %>% 
+  mutate(
+    short_question_text = factor(
+      short_question_text,
+      levels = c("Sleep <7 hours", "Physical Inactivity", "Binge Drinking", "Current Smoking")
+      )
+    ) %>% 
+  arrange(desc(data_value))
+
+# Combine above datasets into one for plotting
+cumulative <- rbind(c20, c21, c22)
+
+# Plot code
+ggplot(cumulative, aes(year, data_value, color = short_question_text)) +
+  geom_line(size = 1) +
+  theme_classic() +
+   scale_y_continuous(
+    name = "Crude Prevalence",
+    labels = scales::label_percent(scale = 1),
+    limits = c(10,40)
+    ) +
+  scale_x_continuous(
+    name = "Year",
+    breaks = c(2018, 2019, 2020)
+    ) +
+  scale_color_manual(
+    name = NULL,
+    labels = c("Inadequate Sleep   ", "Physical Inactivity   ", "Binge Drinking   ", "Smoking   "),
+    # Re-implement custom color palette for cohesion
+    values = c("#BB1818","#CE5727", "#E19535", "#F4D444")
+    ) +
+  ggtitle("Change in Presence of Health Risk Behaviors in Sampled Chinatown adults aged ≥ 18 (2018-2020)") +
+  theme(
+    axis.title = element_text(family = "serif"),
+    plot.title = element_text(family = "serif", size = 14, hjust = 0.5),
+    plot.title.position = "plot",
+    legend.position = c(0.5, 0.96),
+    legend.direction = "horizontal",
+    legend.justification = 0.55,
+    panel.grid.major.y = element_line()
+    ) +
+  # Add data points and labels
+  geom_point(aes(year, data_value)) +
+  geom_text(
+    aes(y = data_value - 0.8, label = str_c(data_value, "%")),
+    size = 2.5, 
+    show.legend = F
+    )
+```
+
+## Comparison to Chicagoland
+
+```{r}
+#| echo: false
+#| label: graphic-3
+
+# Create dataset combining map and survey data
+places_2022 <- read_csv("data/PLACES_2022.csv") %>% 
+  janitor::clean_names()
+
+map_data_base <- zctas(state = "IL", year = 2010, progress_bar = FALSE) %>% 
+  janitor::clean_names() %>%
+  left_join(places_2022, by = c("zcta5ce10" = "location_name")) %>% 
+  select(zcta5ce10, year, category, measure, data_value, data_value_type, 
+         geolocation, location_id, short_question_text, geometry) %>% 
+  filter(category == "Health Outcomes" & 
+         zcta5ce10 %in% c(60600:60700))
+
+# Create datasets to fill each zipcode by prevalence of specific disease
+
+obesity_data <- map_data_base %>% 
+  filter(short_question_text == "Obesity")
+  
+blood_pressure_data <- map_data_base %>% 
+  filter(short_question_text == "High Blood Pressure")
+
+cholesterol_data <- map_data_base %>% 
+  filter(short_question_text == "High Cholesterol")
+
+# Create dataset to outline Chinatown region on map  
+
+chinatown_highlight <- map_data_base %>% 
+  filter(location_id == "60616")
+
+# Code for heat map plot of each disease 
+blood_pressure <- ggplot(blood_pressure_data, aes(fill = data_value)) +
+  geom_sf(color = "black", show.legend = F) +
+  scale_fill_gradient2(
+    name = "% Crude\nPrevalence",
+    low = "white", 
+    high = "#BB1818",
+    breaks = c(0, 25, 50),
+    limits = c(0, 50),
+    labels = c("0", "25",  "50")
+    ) +
+  ggtitle("High Blood Pressure") +
+  theme_void() +
+  theme(
+    plot.title = element_text(family = "serif"),
+    legend.title = element_text(family = "serif")    
+    ) +
+  geom_sf(data = chinatown_highlight, color = "yellow", show.legend = F)
+
+cholesterol <- ggplot(cholesterol_data, aes(fill = data_value)) +
+  geom_sf(color = "black", show.legend = F) +
+  scale_fill_gradient2(
+  name = "% Crude\nPrevalence",
+  low = "white", 
+  high = "#BB1818",
+  breaks = c(0, 25, 50),
+  limits = c(0, 50),
+  labels = c("0", "25",  "50")
+  ) +
+  ggtitle("High Cholesterol") +
+  theme_void() +
+  theme(
+    plot.title = element_text(family = "serif"),
+    legend.title = element_text(family = "serif")    
+    ) +
+  geom_sf(data = chinatown_highlight, color = "yellow", show.legend = F)
+
+obesity <- ggplot(obesity_data, aes(fill = data_value)) +
+  geom_sf(color = "black") +
+  scale_fill_gradient2(
+    name = "% Crude\nPrevalence",
+    low = "white", 
+    high = "#BB1818",
+    breaks = c(0, 25, 50),
+    limits = c(0, 50),
+    labels = c("0", "25",  "50")
+    ) +
+  geom_sf(data = chinatown_highlight, color = "yellow") +
+  ggtitle("Obesity") +
+  theme_void() +
+  theme(
+    plot.title = element_text(family = "serif"),
+    legend.title = element_text(family = "serif"), 
+    legend.position = c(1.1, 0.75)
+    )
+  
+# Use patchwork to arrange plots
+blood_pressure + cholesterol + obesity + 
+  plot_annotation(
+    title = "Occurence of Three Most Common Health Conditions in Chinatown across Chicago",
+    caption = "Source: PLACES: Local Data for Better Health 2022 release",
+    theme = theme(
+      plot.title = element_text(face = "bold", family = "serif", size = 16), 
+      plot.caption = element_text(family = "serif", size = 10)
+      )
+    ) 
+```
+
+Chinatown is highlighted with a yellow border. Comparison maps for the remaining diseases for which survey data is available can be generated with the linked Shiny dashboard. [Click here to access dashboard](https://9iuyod-hannah-ma.shinyapps.io/map_dashboard/).

@@ -1,0 +1,23 @@
+---
+title: "Additional Information Memo"
+author: "Hannah Ma"
+format: 
+  html:
+    embed-resources: true
+
+editor: source
+---
+
+As mentioned in the introductory slide, these visualizations were created in part to aid Chinatown Health Initiative in understanding health issues in Chinatown and what can be addressed by the club to improve residents' health in this region. Thus, the additional information will revolve around the core question of "How does this inform the club's future initiatives?"
+
+## Graphic 1
+
+This graphic displays disease information collected by the PLACES survey in order of how common they are in the Chicago Chinatown zipcode, informing viewers that High Blood Pressure, High Cholesterol, and Obesity should be addressed most urgently in health improvement initiatives. The prevalence of each disease is not only communicated by the heights of their respective bars, but also with a custom gradient color palette which I designed with familiar colors from Chinese culture. Labels have also been included to communicate the precise prevalence of each disease, and error bars were added to visualize uncertainty within the data.
+
+## Graphic 2
+
+This graphic illustrates the change in prevalence of health risk behaviors in Chinatown over 3 years of data collection. This graphic was created to provide information about the factors that may have led to the results shown in the first graphic, and the directional trends for each behavior can be used to inform the priority of future health initiatives. For example, binge drinking and physical inactivity have both been shown in studies to correlate with to high cholesterol levels, and the increase in the latter tells us we need to address that over binge drinking when considering how to improve this situation. The unique time frame over which the data was collected may also allow for tentative hypotheses to be made about how the pandemic has impacted health in Chinatown. However, the small number of data points certainly should be acknowledged as a limitation to the strength of those conclusions.
+
+## Graphic 3
+
+No investigation of one subject is complete without context, and therefore these maps compare the most common diseases within Chinatown to their prevalence in other areas of Chicagoland for a bird's-eye view of the information. This portion of the project was initially planned to only include the dashboard. A web app allows for quick and efficient generation of the plots needed to capture all this information, since toggling the heat maps becomes a simple matter of switching the selection input. However, viewing the sheer volume of information available across so many zipcodes would likely inundate the comparative view provided by the web app. Therefore, heat maps of the three most common diseases in Chinatown compared across Chicagoland were provided as the main graphic to help viewers focus on the most pressing health issues in Chinatown. These graphics demonstrate that although these diseases are common in Chinatown, their prevalence is still relatively low compared to other suburban and rural regions of Chicago. Residents likely engage regularly in good health practices. A graphic like this may be used in the future to support legislative actions regarding healthcare around Chicago by visualizing which areas are in urgent need of action, and what action to take.
